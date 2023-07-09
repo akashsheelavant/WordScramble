@@ -36,6 +36,11 @@ struct ContentView: View {
                 }
             }
             .navigationTitle(rootWord)
+            .toolbar {
+                Button("Restart") {
+                    startGame()
+                }
+            }
         }
         .onSubmit {
             addNewWord()
@@ -70,6 +75,11 @@ struct ContentView: View {
             return
         }
         
+        guard isLongEnough(word: answer) else {
+            wordError(title: "Word is not long enough", message: "Words shorter than three letters are not allowed")
+            return
+        }
+        
         withAnimation {
             usedWords.insert(answer, at: 0)
         }
@@ -77,6 +87,9 @@ struct ContentView: View {
     }
     
     func startGame() {
+        usedWords.removeAll()
+        showingError = false
+        
         if let startWordsURL = Bundle.main.url(forResource: "star", withExtension: "txt") {
             if let startWords = try? String(contentsOf: startWordsURL) {
                 let allWords = startWords.components(separatedBy: "\n")
@@ -109,6 +122,10 @@ struct ContentView: View {
         let range = NSRange(location: 0, length: word.utf16.count)
         let misspelledRange = checker.rangeOfMisspelledWord(in: word, range: range, startingAt: 0, wrap: false, language: "en")
         return misspelledRange.location == NSNotFound
+    }
+    
+    func isLongEnough(word: String) -> Bool {
+        return word.count >= 3
     }
     
     func wordError(title: String, message: String) {
